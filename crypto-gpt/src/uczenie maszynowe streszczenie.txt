@@ -1,0 +1,507 @@
+Zalety i wady uczenia maszynowego
+    Zalety
+        ● Bardzo duża dokładność rozwiązania
+        ● Znajdowanie wzorców w ogromnych ilościach danych
+        ● Piszący rozwiązanie nie musi dokładnie rozumieć istoty problemu
+    Wady
+        ● Konieczne są dane dostatecznej wielkości i jakości
+        ● Etykietowanie danych jest kosztowne
+        ● Trudno interpretować wyniki zwracane przez modele
+
+Konieczne są dane dostatecznej wielkości i jakości
+    Jakość ważniejsza niż ilość!
+        ● Niewiele dobrych danych - coś zrobimy
+        ● Dużo danych niskiej jakości - nic nie zrobimy
+
+    Etykietowanie danych jest kosztowne
+
+    Trudno interpretować wyniki zwracane przez modele
+
+Podstawowe nazwy
+    cechy/zmienne objaśniające (ang. features)
+    zmienna celu/objaśniana (ang. target)
+    obserwacja (ang. datapoint)
+    etykieta (ang. label)
+
+Jak kodować dane
+
+    Kodowanie cech porządkowych przy pomocy liczb
+        ID, mood -> ID, mood
+        0, OK -> 0, 1
+        1, good -> 1, 2
+        2, good -> 2, 2
+        3, bad -> 3, 0
+        4, bad -> 4, 0
+        5, great -> 5, 3
+        6, OK -> 6, 1
+    Nie trać informacji: zachowaj naturalny porządek.
+
+    Kodowanie cech kategorycznych przy pomocy liczb.
+    Cech kategorycznych nie można zakodować tak samo jak porządkowych, np to nieprawda że cat < dog < cow, ani że dog - cat = cow - dog, 2 * dog = cow
+    Dlatego można to kodować następująco
+        ID, animal -> ID, cat, dog, cow
+        0, cat -> 0, 1, 0, 0
+        1, dog -> 1, 0, 1, 0
+        2, dog -> 2, 0, 1, 0
+        3, cow -> 3, 0, 0, 1
+        4, cat -> 4, 1, 0, 0
+        5, dog -> 5, 0, 1, 0
+        6, dog -> 6, 0, 1, 0
+
+    Kodowanie cech logicznych przy pomocy liczb
+        ID, is_cute -> ID, is_cute
+        0, True  -> 0, 1
+        1, False -> 1, 0
+        2, True  -> 2, 1
+        3, False -> 3, 0
+        4, False -> 4, 0
+        5, False -> 5, 0
+        6, True  -> 6, 1
+
+    Równie dobrze możesz zakodować True jako 0 i False jako 1.
+    Nieważne, czy True > False, czy odwrotnie. Algorytm sam "postawi minus" gdzie trzeba, jeśli trzeba.
+
+    Czy braki danych niosą jakąś informację?
+        ● Czasami tak!
+
+Rodzaje uczenia:
+    ● Uczenie bez nadzoru, nauka ze struktury danych (analiza skupień, wykrywanie anomalii)
+    ● Uczenie z nadzorem, nauka z danych historycznych (klasyfikacja, regresja)
+    ● Uczenie ze wzmocnieniem, Nauka przez interakcję ze środowiskiem (ewolucja strategii)
+
+Uczenie z nadzorem (ang. supervised learning)
+    ● Cel: Generowanie predykcji na podstawie znalezionych wzorców między danymi wejściowymi a wyjściem
+    ● Wykonanie: Maszynowa analiza relacji między danymi wejściowymi a wyjściowymi
+    ● Kiedy używamy: Używamy gdy znamy prawidłowe odpowiedzi dla pewnych danych (np. historycznych) i na tej podstawie próbujemy przewidzieć prawidłowe odpowiedzi dla innych danych (np. dotyczących przyszłości)
+    ● Model uczony z nadzorem poznajemy w kodzie po tym, że metoda fit przyjmuje dane (np. X) oraz prawidłowe odpowiedzi (np. y).
+
+Klasyfikacja i regresja
+    ● Klasyfikacja - przewidujemy klasę/kategorię/zmienną jakościową:
+        - kolor
+        - narodowość
+    ● Regresja - przewidujemy wartość liczbową/zmienną ilościową:
+        - wynagrodzenie
+        - wiek
+
+Klasyfikacja i regresja - znane algorytmy
+    ● Klasyfikacja
+        - k najbliższych sąsiadów (ang. k nearest neighbors, knn)
+        - maszyna wektorów podpierających (ang. support vector machine, svm)
+        - regresja logistyczna (Analiza regresji i szeregów czasowych)
+    ● Regresja
+        - regresja liniowa (Analiza regresji i szeregów czasowych)
+    ● Klasyfikacja i regresja
+        - drzewa decyzyjne
+        - sieci neuronowe
+
+Najważniejsza zasada w uczeniu z nadzorem
+    ● Celem NIE jest jak najlepsze nauczenie się odpowiedzi dla danych treningowych. Przecież i tak je znamy!
+    ● Celem jest zbudowanie modelu, który najlepiej poradzi sobie w rzeczywistym zastosowaniu.
+    ● Jak tego dokonać?
+    ● Trzeba sprawdzać jakość modelu na innych danych niż te użyte do treningu. Nazywamy to walidacją modelu.
+
+Rodzaje walidacji
+    ● Prosta walidacja
+    ● K-krotna walidacja
+    ● K-krotna walidacja dla szeregów czasowych
+    ● Wiele innych...
+    ● Hierarchiczne łączenie powyższych
+
+Prosta walidacja: podział na zbiór treningowy i testowy (ang. train/test split)
+    ● Zalety:
+        - Bardzo prosty
+    ● Wady:
+        - Nie wykorzystujemy części danych do treningu.
+        - Nie mamy zbioru walidacyjnego, czyli nie mamy narzędzia do porównania różnych modeli.
+    ● Dane nie zawsze możemy dzielić losowo.
+
+Prosta walidacja: zbiór trening., walidacyjny i testowy
+    ● trenuj modele na zbiorze treningowym
+    ● wybierz najlepszy model używając zbioru walidacyjnego
+    ● wytrenuj ponownie najlepszy model używając zbioru treningowego i walidacyjnego (które razem stają się teraz "nowym" zbiorem treningowym)
+    ● sprawdź jakość najlepszego modelu używając zbioru testowego
+
+    ● Zalety:
+        - Dość prosty
+        - Mamy zbiór walidacyjny
+    ● Wady:
+        - Nie wykorzystujemy części danych do treningu.
+
+K-krotna walidacja
+    ● Zalety:
+        - W pełni uczciwie wykorzystujemy wszystkie dane zarówno do treningu, jak i testu.
+    ● Wady:
+        - Dość skomplikowany.
+        - Musimy trzymać k kopii modelu
+        - Trudniej interpretować wyniki.
+
+Jak uczą się modele
+    1. Wybierz funkcję mierzącą, jak bardzo model się myli dla danych treningowych i zadanych parametrów modelu. Taką funkcję nazywamy funkcją straty lub funkcją kosztu (ang. loss function, cost function).
+    2. Znajdź takie parametry modelu, dla których funkcja straty daje najmniejszą wartość. Innymi słowy: dla danych treningowych zminimalizuj funkcję straty ze względu na parametry modelu.
+    trenowanie modelu = minimalizacja funkcji straty
+
+Jak zminimalizować funkcję straty
+    Policzyć minimum na palcach
+        ● Najpewniejsza metoda
+        ● Niestety w uczeniu maszynowym praktycznie nigdy nie da się tak doliczyć
+
+    Policzyć minimum analitycznie
+        ● Pewna metoda
+        ● Niestety w uczeniu maszynowym praktycznie nigdy nie da się tak doliczyć
+
+    Poszukać minimum metodami numerycznymi
+        ● Potrafimy numerycznie znajdować tylko minima lokalne, nigdy nie wiemy, czy gdzieś indziej nie chowa się lepsze minimum lokalne
+        ● Przestrzeń, po której błądzimy, ma tyle wymiarów, ile model ma parametrów, czyli miliony dla sieci neuronowych!
+        ● Brak pewności, czy znajdziemy jakiekolwiek minimum
+        ● Niestety w uczeniu maszynowym praktycznie zawsze musimy szukać minimum tym sposobem
+
+    Algorytm najszybszego spadku (and. gradient descent algorithm)
+        a, b = a_initial, b_initial
+        repeat
+            a, b = a, b - lambda * Grad(L(a,b))
+        until convergence
+
+        ● Prosty i zwykle skuteczny
+        ● Szeroko używany w uczeniu maszynowym
+        ● Sieci neuronowe trenuje się tylko w ten sposób (używa się jednak podrasowanych wersji algorytmu)
+
+    Algorytmy oparte na pierwszej i drugiej pochodnej (np. L-BFGS)
+        ● Skuteczniejsze i zbiegające w mniejszej liczbie kroków niż algorytmy oparte na tylko pierwszej pochodnej
+        ● Wymagają jednak znacznie więcej obliczeń, dlatego nie nadają się do trenowania sieci neuronowych
+
+Co to jest normalizacja danych?
+    ● Przesuwamy i skalujemy dane tak, aby wszystkie cechy miały podobne zakresy
+    ● Tracimy interpretowalność cech
+    ● Zyskujemy możliwość podania modelowi danych z odpowiednią perspektywą
+    ● Musimy normalizować dane dla wszystkich algorytmów poza drzewami decyzyjnymi*
+
+    * Drzewa decyzyjne traktują wszystkie cechy jak cechy porządkowe, tzn. patrzą na porządek między wartościami, nie same wartości.
+
+    ● Normalizacja to przekształcenie liniowe
+        X_normalized = (X - coś1) / coś2
+
+    ● Normalizacja jest łatwo odwracalna (nie tracimy żadnych informacji)
+        X = X_normalized * coś2 + coś1
+
+Popularne normalizacje
+    1. Standaryzacja
+    2. Normalizacja do [0, 1]
+    3. Normalizacja do [-1, 1]
+
+Standaryzacja - definicja
+    X_normalized = (X - mean(X)) / std(X)
+
+    ● mean(X) - średnia po kolumnach (czyli osobno dla każdej cechy)
+    ● std(X) - odchylenie standardowe po kolumnach (czyli osobno dla każdej cechy)
+    ● Jeśli X to pandasowa ramka danych: X.mean(), X.std()
+    ● Jeśli X macierz NumPy: X.mean(axis=0), X.std(axis=0)
+
+Normalizacja do [0, 1] - definicja
+    m = min(X), s = max(X) - min(X)
+    X_normalized = (X - m) / s
+
+    ● Dane są wsadzane w przedział [0, 1]
+    ● min(X) → 0, max(X) → 1
+    ● Jeśli X to pandasowa ramka danych: X.min(), X.max()
+    ● Jeśli X macierz NumPy: X.min(axis=0), X.max(axis=0)
+    ● Normalizacja do [0, 1] jest bardzo wrażliwa na obserwacje odstające
+        - Uporaj się z obserwacjami odstającymi
+        - lub zignoruj obserwacje odstające przy liczeniu min i max (wtedy niektóre wartości wyjdą jednak poza przedział [0, 1])
+
+Normalizacja do [-1, 1] - definicja
+    m = (min(X) + max(X)) / 2, s = (max(X) - min(X)) / 2
+    X_normalized = (X - m) / s
+
+    ● Dane są wsadzane w przedział [-1, 1]
+    ● min(X) → -1, max(X) → 1
+    ● Jeśli X to pandasowa ramka danych: X.min(), X.max()
+    ● Jeśli X macierz NumPy: X.min(axis=0), X.max(axis=0)
+
+    ● Normalizacja do [-1, 1] jest bardzo wrażliwa na obserwacje odstające
+        - Uporaj się z obserwacjami odstającymi
+        - lub zignoruj obserwacje odstające przy liczeniu min i max (wtedy niektóre wartości wyjdą jednak poza przedział [-1, 1])
+
+Normalizacja zmiennej celu
+    ● Nie normalizujemy zmiennej celu (tzn. Y), nie ma takiej potrzeby
+    ● Zmienną celu czasem transformujemy, podobnie zresztą jak cechy, więcej o tym na przedmiocie Eksploracyjna analiza danych
+
+Normalizacja na treningu i teście
+    ● Dane testowe normalizujemy parametrami policzonymi dla danych
+    treningowych
+
+    m = mean(X_train)
+    s = std(X_train)
+    X_train_normalized = (X_train - m) / s
+    X_test_normalized = (X_test - m) / s
+
+    ● Zestandaryzowane dane testowe NIE mają średniej równej dokładnie 0 ani
+    odchylenia standardowego równego dokładnie 1
+
+
+Co to jest przeuczenie (ang. overfitting)?
+    ● Model uczy się na pamięć zbioru treningowego
+    ● Znacznie lepszy wynik modelu na danych treningowych niż na danych walidacyjnych/testowych
+    ● Przeuczony model jest bezwartościowy, więc musimy zrobić wszystko, żeby zapobiec przeuczeniu
+    ● Przeciwdziałanie przeuczaniu się modelu nazywamy regularyzacją
+
+Dlaczego modele się przeuczają?
+    ● Za mało danych
+    ● Za duży model
+    ● Błąd w kodzie
+
+Za mało danych - co robić?
+    ● Nie wstydź się prosić klienta o więcej danych
+    ● Skończ prosić dopiero, jeśli na pewno nie ma już więcej lub nie chce dać więcej
+    ● Zbiór danych można sztucznie, ale uczciwie rozszerzyć
+    ● Zabieg sztucznego rozszerzania zbioru danych nazywa się po angielsku data augmentation
+
+    ● Dorzucenie losowo zaburzonej kopii danych powinno zmniejszyć przeuczenie
+    ● Za mało zaburzone dane - brak efektu
+    ● Za bardzo zaburzone dane - model przestaje się uczyć
+    ● Trzeba dobrać "stopień zaburzenia" zdroworozsądkowo: tak długo, jak zaburzone dane wyglądają rozsądnie (tzn. możemy takie dostać w prawdziwym świecie), tak długo jest OK
+
+Data augmentation dla danych obrazkowych
+    ● rotation
+    ● flip
+    ● crop
+    ● stretching
+    ● translation
+    ● resize
+    ● contrast
+    ● blur
+    ● RGB → BGR
+    ● color inversion
+
+Za duży model - co robić?
+Mówimy, że model jest za duży / zbyt pojemny dla naszego zagadnienia, jeżeli bardzo łatwo przychodzi mu przeuczanie się
+
+Za duży model - zmniejsz model
+    Przykład drzewo decyzyjne
+        ● Ogranicz głębokość drzewa
+        ● Ogranicz liczbę liści
+        ● Twórz nowe liście tylko jeśli przynosi to dostatecznie dużą korzyść
+        ● Użyj losowego podzbioru danych
+
+    Przykład sieć neuronowa
+        ● Zmniejsz liczbę warstw
+        ● Zmniejsz wielkość warstw
+
+Za duży model - trzymaj wagi modelu w ryzach
+    ● ogromne wagi = przeuczenie
+    ● Co zrobić, żeby wagi były nie za duże?
+    ● Karać model za zbyt duże wagi!
+    ● Przy pomocy funkcji straty karzemy model za słabe predykcje.
+    ● Dopisujemy do funkcji straty dodatkowy składnik karzący za zbyt duże wagi.
+
+    Regularyzacja L2 (Ridge)
+        ● Do funkcji straty dodajemy sumę kwadratów wag
+        ● Regresja liniowa z regularyzacją L2 nazywa się po ang. Ridge regression
+        ● Nie regularyzujemy wyrazu wolnego
+        ● Używamy tej metody również dla innych modeli, np. sieci neuronowych
+
+    Regularyzacja L2 - co powoduje?
+        ● Regularyzacja L2 nie pozwala żadnej wadze wybuchnąć
+        ● Powoduje, że wszystkie wagi są niewielkie i tego samego rzędu wielkości
+
+    Regularyzacja L1 (Lasso)
+        ● Do funkcji straty dodajemy sumę wartości bezwzględnych wag
+        ● Regresja liniowa z regularyzacją L1 nazywa się po ang. Lasso regression
+        ● Nie regularyzujemy wyrazu wolnego
+        ● Używamy tej metody również dla innych modeli, np. sieci neuronowych
+
+    Regularyzacja L1 - co powoduje?
+        ● Regularyzacja L1 zeruje wagi przy mniej istotnych zmiennych
+        ● Dlatego jest używana jako metoda wyboru istotnych cech
+
+    Regularyzacja L1 + L2 (ElasticNet)
+        ● Regresja liniowa z regularyzacjami L1 i L2 nazywa się po ang. ElasticNet
+        ● Nie regularyzujemy wyrazu wolnego
+        ● Używamy tej metody również dla innych modeli, np. sieci neuronowych
+
+    Regularyzacja L1 + L2 - co powoduje?
+        ● Regularyzacja L1 + L2 łączy efekty regularyzacji L1 i L2
+
+Uczenie bez nadzoru (ang. unsupervised learning)
+    ● Cel: Najczęściej: grupowanie danych w rozsądne podzbiory
+    ● Wykonanie: Wykrywanie wzorców w posiadanych danych
+    ● Kiedy używamy: Używamy kiedy nie znamy prawidłowych odpowiedzi i próbujemy znaleźć w danych wzorce rozsądnie dzielące nasz zbiór
+
+    Model uczony bez nadzoru poznajemy w kodzie po tym, że metoda fit przyjmuje tylko dane (np. X).
+        model = MachineLearningUnsupervisedModel()
+        model.fit(X)
+        def predict_cluster(x):
+            return model.predict(x)
+    
+Co to są niezbalansowane dane (ang. imbalanced data)?
+    ● W klasyfikacji któraś klasa jest znacznie mniej liczna niż inna
+    ● "Znacznie mniej" = co najmniej kilka razy
+
+W jakich zagadnieniach możemy się spodziewać niezbalansowanych danych?
+    ● W bardzo wielu!
+    ● Wykrywanie chorób
+    ● Wykrywanie oszustw finansowych
+    ● Analiza aktywności na stronach internetowych
+
+Co się stanie, jeśli zignorujemy fakt, że dane są
+niezbalansowane?
+    ● Wytrenowany model prawdopodobnie będzie ignorował mniej liczne klasy
+    ● Dokładność modelu (accuracy) będzie wysoka, ale sam model będzie niskiej jakości
+
+Niezbalansowane dane - co robić
+    1. Spróbuj zdobyć więcej danych
+    2. Przepróbkuj dane tak, aby zmniejszyć dysproporcje między klasami
+    3. Rozważ zmianę funkcji straty
+    4. Nie używaj dokładności (accuracy)
+    5. Rozważ zmianę algorytmu
+    6. Zmień perspektywę
+    7. Bądź kreatywna/-y
+
+    2. Przepróbkuj dane tak, aby zmniejszyć dysproporcje między klasami
+        Dwie strategie:
+            ● Nadpróbkowanie (ang. oversampling): sztuczne powiększenie mało licznej klasy
+            ● Podpróbkowanie (ang. undersampling): sztuczne zmniejszenie bardzo licznej klasy
+
+        Nadpróbkowanie (oversampling)
+            ● Naiwne nadpróbkowanie (skopiowanie mało licznej klasy)
+            ● Losowe nadpróbkowanie (ang. random oversampling)
+            ● SMOTE
+            ● ADASYN
+
+        Naiwne nadpróbkowanie
+            ● Po prostu kopiujemy dane dla mało licznej klasy tyle razy, aby dysproporcje między klasami stały się dostatecznie małe
+
+        Losowe nadpróbkowanie (ang. random oversampling)
+            ● Losujemy obserwację z oryginalnej mało licznej klasy ze zwracaniem i dodajemy jej kopię do zbioru danych
+            ● Powtarzamy procedurę tak długo, aż dysproporcje między klasami będę dostatecznie małe
+            ● Tak tworzone dane mają paradoksalnie lepsze własności statystyczne niż przy kopiowaniu całego zbioru
+
+        SMOTE
+        Algorytm działa na obserwacjach z mało licznej klasy:
+            1. Wylosuj obserwację z mało licznej klasy
+            2. Wybierz losowo jednego z k jej najbliższych sąsiadów
+            3. Stwórz nowy punkt w losowym miejscu na odcinku łączącym obserwacje z 1 i 2
+
+        ADASYN
+            ● SMOTE z poprawką powodującą, że więcej danych z mniej licznej klasy zostanie wygenerowanych w rejonach, w których jest więcej danych z liczniejszej klasy
+
+        Nadpróbkowanie a walidacja
+            ● Robimy nadpróbkowanie PO podziale na trening/walidację/test
+            ● W przeciwnym przypadku mielibyśmy poważny wyciek danych (rozważ np. naiwne i losowe nadpróbkowanie)
+            ● Robimy nadpróbkowanie tylko dla danych treningowych - dane walidacyjne i testowe mają jak najlepiej symulować dane na produkcji
+            ● Rozkład liczności klas na treningu będzie inny niż na walidacji i teście - musimy z tym żyć
+
+        Podpróbkowanie (undersampling)
+            ● Losowe podpróbkowanie (ang. random undersampling)
+            ● Sztuczka z algorytmem k-średnich
+            ● Edited Nearest Neighbor
+            ● Tomek links
+
+        Losowe podpróbkowanie (ang. random undersampling)
+            ● Usuwaj losowo obserwacje z liczniejszej klasy tak długo, aż proporcje między klasami staną się dostatecznie małe
+
+        Sztuczka z algorytmem k-średnich
+            ● Wytrenuj algorytm k-średnich dla liczniejszej klasy
+            ● Wybierz k równe liczności zbioru, jaką chcesz otrzymać
+            ● Każde skupienie zastąp jego centroidem
+
+        Edited Nearest Neighbor
+            ● Wytrenuj algorytm k najbliższych sąsiadów
+            ● Usuń obserwacje z liczniejszej klasy, które zostały źle sklasyfikowane (tzn. te, dla których większość sąsiadów jest z innej klasy)
+
+        Tomek links
+            ● "Tomek link" - para obserwacji leżących blisko siebie, ale należących
+            do różnych klas
+            ● Znajdź wszystkie takie pary
+            ● Z każdej z nich usuń obserwację z liczniejszej klasy
+
+        Podpróbkowanie - ogólne uwagi
+            ● W wyniku podpróbkowania tracimy część danych
+            ● Dlatego używamy go tylko jeśli danych mamy odpowiednio dużo
+
+    3. Rozważ zmianę funkcji straty, zważ klasy w funkcji straty
+        ● W klasyfikacji zwykle używamy entropii krzyżowej jako funkcji straty
+        ● Radzi ona sobie całkiem nieźle z niezbalansowanymi danymi, warto jednak sprawdzić, czy ważenie klas nie pomoże
+        ● Spróbuj użyć parametru class_weight="balanced", jeśli jest dostępny
+
+    4. Nie używaj dokładności (accuracy)
+        ● Dokładność (accuracy) jest bezużyteczna dla niezbalansowanych danych, ponieważ jest bardzo wysoka nawet dla modelu stałego
+        ● Musimy używać innych miar jakości modeli
+
+    5. Rozważ zmianę algorytmu
+        ● Generalnie drzewa decyzyjne nieźle radzą sobie z niezbalansowanymi danymi
+        ● Inne algorytmy mają więcej problemów (np. sieci neuronowe)
+    
+    6. Zmień perspektywę
+        ● Być może można potraktować rzadką klasę jako anomalie i użyć metod wykrywania obserwacji odstających
+        ● Być może kilka mało licznych klas można zbić w jedną klasę "inne" bez szkody dla celu biznesowego
+
+Po co badać ważność cech?
+    ● Modele predykcyjne odpowiadają na pytanie "co się stanie?"
+    ● Ale nie odpowiadają na pytanie "dlaczego się to stanie?"
+
+Redukcja wymiarów (ang. dimensionality reduction)
+    ● Bywa tak, że liczba cech jest za duża
+    ● Redukcja wymiarów to takie przekształcenie danych, w którym:
+        - zamieniamy dużo starych cech na mniej nowych cech
+        - liczba obserwacji nie zmienia się
+        - tracimy możliwie mało informacji
+    ● Wyrzucenie stałych cech lub bardzo mocno skorelowanych cech nie wpada w definicję redukcji wymiarów, choć w zasadzie nią jest
+
+Redukcja wymiaru - za i przeciw
+    Za:
+        ● Zmniejszamy liczbę cech z niewielką stratą informacji - modele łatwiej się uczą
+    Przeciw:
+        ● Całkowicie tracimy interpretowalność modelu
+        ● Nie możemy przeprowadzić analizy ważności cech
+
+Redukcja wymiaru - przykłady algorytmów
+    ● PCA
+    ● t-SNE
+    ● UMAP
+
+Łączenie modeli (ang. ensemble modeling)
+    ● Idea: "mądrość tłumu" - polegaj na kilku/wielu niezależnych modelach
+    ● Naturalny przykład: las losowy
+        - głosowanie urządzone między drzewami (klasyfikacja)
+        - uśrednienie predykcji poszczególnych drzew (regresja)
+    ● Warto, żeby poszczególne modele były niezależne od siebie, a najlepiej,
+    żeby były zupełnie różnych rodzajów
+
+Łączenie modeli - za i przeciw
+    Za:
+        ● Zwykle daje lepszy wynik niż każdy model z osobna
+    Przeciw:
+        ● Bardzo komplikuje strukturę rozwiązania
+        ● Bardzo zwiększa wielkość rozwiązania i czas potrzebny na obliczenia
+        ● Bardzo utrudnia analizę ważności cech
+
+Łączenie modeli - kiedy używać?
+    Łącz modele jeśli:
+        ● Potrzebujesz wyśrubować super wynik
+        ● Wielkość rozwiązania i czas potrzebny na obliczenia nie są ograniczeniami
+        ● Nie potrzebujesz analizować ważności cech
+        ● Typowy przykład: konkurs na kaggle.com
+    Nie łącz modeli jeśli:
+        ● Mały rozmiar rozwiązania jest ważniejszy od poprawy jakości na czwartym miejscu po przecinku
+        ● Potrzebujesz analizować ważność cech
+        ● Typowy przykład: model, który będzie używany na urządzeniu wbudowanym (ang. embedded)
+
+Łączenie modeli - przykłady technik
+    ● Proste głosowanie (klasyfikacja)
+    ● Średnia z predykcji (regresja)
+    ● Kolejny model łączący modele predykcyjne
+
+Trenowanie modeli krok po kroku
+    1. Przetłumacz problem biznesowy na problem techniczny
+    2. Popatrz na dane
+    3. Wybierz miarę oceny jakości modeli
+    4. Wybierz metodę walidacyjną
+    5. Ustal punkt odniesienia
+        a. ile daje bieżące rozwiązanie klienta?
+        b. ile daje model stały?
+    6. Zrób porządną analizę eksploracyjną danych
+    7. Zrób porządną inżynierię cech
+    8. Wybierz modele do użycia
+    9. Trenuj modele
+
+Staraj się użyć wykorzystać powyższe streszczenie wiadomości na temat uczenia maszynowego w swoich odpowiedziach

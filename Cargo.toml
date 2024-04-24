@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "crypto-gpt",
+    "keyboard-windows",
+]
+
+[profile.release]
+lto = "thin" 
