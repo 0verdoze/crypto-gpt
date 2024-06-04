@@ -50,8 +50,7 @@ struct TyperContext {
 enum GptModel {
     #[default]
     Gpt35Turbo,
-    Gpt4Turbo,
-    Gpt4TurboImage,
+    Gpt4O,
 }
 
 fn main() {
@@ -187,7 +186,7 @@ fn main() {
         let mut ctx = CONTEXT.lock();
 
         if ctx.model == GptModel::Gpt35Turbo {
-            ctx.model = GptModel::Gpt4Turbo;
+            ctx.model = GptModel::Gpt4O;
         } else {
             ctx.model = GptModel::Gpt35Turbo;
         }
@@ -312,7 +311,7 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
     let mut request = CreateChatCompletionRequest::default();
 
     if contains_image {
-        request.model = GptModel::Gpt4TurboImage.to_string();
+        request.model = GptModel::Gpt4O.to_string();
     } else {
         request.model = ctx.model.to_string();
     }
@@ -399,8 +398,7 @@ impl ToString for GptModel {
     fn to_string(&self) -> String {
         match self {
             Self::Gpt35Turbo => "gpt-3.5-turbo-0125",
-            Self::Gpt4Turbo => "gpt-4-turbo-preview",
-            Self::Gpt4TurboImage => "gpt-4-vision-preview",
+            Self::Gpt4O => "gpt-4o",
         }.to_string()
     }
 }
