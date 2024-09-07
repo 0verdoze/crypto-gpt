@@ -29,7 +29,7 @@ pub struct KeypressHandler;
 
 unsafe extern "system" fn windows_callback(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     let info: &mut KBDLLHOOKSTRUCT = unsafe {
-        if (code < 0) | (lparam.0 == 0) {
+        if (code != HC_ACTION) | (lparam.0 == 0) {
             return CallNextHookEx(None, code, wparam, lparam);
         }
 
