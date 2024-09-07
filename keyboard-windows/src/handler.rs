@@ -33,7 +33,9 @@ unsafe extern "system" fn windows_callback(code: i32, wparam: WPARAM, lparam: LP
             return CallNextHookEx(None, code, wparam, lparam);
         }
 
-        &mut *mem::transmute::<isize, *mut KBDLLHOOKSTRUCT>(lparam.0)
+        // using transmute here is UB, as of rust 1.78 this fails
+        // https://github.com/rust-lang/rust/pull/121282#issuecomment-2129895020
+        *&(lparam.0 as *mut KBDLLHOOKSTRUCT)
     };
 
     if info.dwExtraInfo == MAGIC_CONST {
