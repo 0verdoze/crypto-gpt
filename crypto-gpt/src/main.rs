@@ -1,4 +1,4 @@
-use std::{io::Cursor, thread, time::Duration};
+use std::{io::Cursor, sync::LazyLock, thread, time::Duration};
 
 use async_openai::{config::OpenAIConfig, types::{ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageUrlArgs, ImageUrlDetail}, Client};
 use base64::Engine;
@@ -19,14 +19,12 @@ mod tray_logger;
 // ctrl + . -> run prompt
 // ctrl + / -> paste latest output
 
-lazy_static::lazy_static! {
-    static ref CONTEXT: Mutex<Context> = Default::default();
-    static ref TYPER_CONTEXT: Mutex<TyperContext> = Default::default();
+static CONTEXT: LazyLock<Mutex<Context>> = LazyLock::new(Default::default);
+static TYPER_CONTEXT: LazyLock<Mutex<TyperContext>> = LazyLock::new(Default::default);
 
-    pub static ref LOGGER: TrayLogger = {
-        TrayLogger::new(env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).build())
-    };
-}
+pub static LOGGER: LazyLock<TrayLogger> = LazyLock::new(|| {
+    TrayLogger::new(env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).build())
+});
 
 #[derive(Debug)]
 struct Context {

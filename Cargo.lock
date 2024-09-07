@@ -407,7 +407,6 @@ dependencies = [
  "env_logger",
  "image",
  "keyboard-windows",
- "lazy_static",
  "log",
  "spin",
  "tokio",
