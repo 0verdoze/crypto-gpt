@@ -44,13 +44,13 @@ unsafe extern "system" fn windows_callback(code: i32, wparam: WPARAM, lparam: LP
 
     match wparam.0 as u32 {
         WM_KEYDOWN => {
-            let mut guard = HANDLER_CTX.lock();
-            
             if let Ok(vk_code) = info.vkCode.try_into() {
                 let pressed_key = Key::from_vk(VIRTUAL_KEY(vk_code));
     
                 let mut ignore_next_hook = false;
                 let mut was_hook_called = false;
+                let mut guard = HANDLER_CTX.lock();
+
                 for (keys, handler) in guard.handlers.iter_mut() {
                     if keys.last().map(|key| key == &pressed_key).unwrap_or_default() {
                         let call = keys[..keys.len() - 1].iter()
