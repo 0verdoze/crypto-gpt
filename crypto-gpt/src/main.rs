@@ -46,9 +46,10 @@ struct TyperContext {
 
 #[derive(Debug, Default, PartialEq, Eq)]
 enum GptModel {
-    #[default]
     Gpt35Turbo,
+    #[default]
     Gpt4O,
+    GptO1,
 }
 
 fn main() {
@@ -183,13 +184,14 @@ fn main() {
     KeypressHandler::add_hotkey(&[Key::LControlKey, Key::QuoteKey], |_| {
         let mut ctx = CONTEXT.lock();
 
-        if ctx.model == GptModel::Gpt35Turbo {
-            ctx.model = GptModel::Gpt4O;
-        } else {
-            ctx.model = GptModel::Gpt35Turbo;
-        }
+        let new_model = match ctx.model {
+            GptModel::Gpt35Turbo => GptModel::Gpt4O,
+            GptModel::Gpt4O => GptModel::GptO1,
+            GptModel::GptO1 => GptModel::Gpt35Turbo,
+        };
+        ctx.model = new_model;
 
-        log::info!("model changed to {}", ctx.model.to_string());
+        log::info!("model changed to {}", new_model.to_string());
 
         true
     });
@@ -397,6 +399,7 @@ impl ToString for GptModel {
         match self {
             Self::Gpt35Turbo => "gpt-3.5-turbo-0125",
             Self::Gpt4O => "gpt-4o",
+            Self::GptO1 => "o1",
         }.to_string()
     }
 }
