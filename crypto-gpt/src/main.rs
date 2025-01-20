@@ -273,10 +273,6 @@ fn main() {
 async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> {
     let ctx = CONTEXT.lock();
 
-    let main_prompt = ChatCompletionRequestSystemMessageArgs::default()
-        .content(prompts::MACHINE_LEARNING_EXPERT)
-        .build()?;
-
     let summary_prompt = ChatCompletionRequestUserMessageArgs::default()
         .content(prompts::LESSON_SUMARY)
         .build()?;
@@ -316,9 +312,20 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
         request.model = ctx.model.to_string();
     }
 
-    request.messages = vec![
-        ChatCompletionRequestMessage::System(main_prompt),
-    ];
+    // O1 doesn't support `System` messages, we need to fallback to `User` ones
+    if ctx.model == GptModel::GptO1 {
+        let main_prompt = ChatCompletionRequestUserMessageArgs::default()
+            .content(prompts::MACHINE_LEARNING_EXPERT)
+            .build()?;
+
+        request.messages.push(ChatCompletionRequestMessage::User(main_prompt));
+    } else {
+        let main_prompt = ChatCompletionRequestSystemMessageArgs::default()
+            .content(prompts::MACHINE_LEARNING_EXPERT)
+            .build()?;
+    
+        request.messages.push(ChatCompletionRequestMessage::System(main_prompt));
+    }
 
     if ctx.summary_prompt {
         request.messages.push(ChatCompletionRequestMessage::User(summary_prompt));
@@ -327,7 +334,11 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
     request.messages.push(ChatCompletionRequestMessage::User(user_prompt));
 
     request.max_completion_tokens = Some(2048);
-    request.temperature = Some(1.3);
+
+    // O1 doesn't support temperature (only 1.0 is supported)
+    if ctx.model != GptModel::GptO1 {
+        request.temperature = Some(1.3);
+    }
 
     drop(ctx);
 
