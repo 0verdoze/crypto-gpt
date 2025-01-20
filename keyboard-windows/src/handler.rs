@@ -1,5 +1,5 @@
 
-use std::{mem, thread};
+use std::thread;
 
 use windows::Win32::UI::Input::KeyboardAndMouse::VIRTUAL_KEY;
 use windows::Win32::UI::WindowsAndMessaging::*;
@@ -11,7 +11,7 @@ pub type HotkeyCallback = Box<dyn FnMut(&[Key]) -> bool + Send>;
 pub type KeypressCallback = Box<dyn FnMut(Key, bool) -> bool + Send>;
 
 static HANDLER_CTX: Lazy<Mutex<HandlerCtx>> = Lazy::new(|| {
-    // initalize thread
+    // initalize thread, it is static and will live until the end of life of this program
     thread::spawn(worker);
 
     Default::default()
@@ -57,7 +57,7 @@ unsafe extern "system" fn windows_callback(code: i32, wparam: WPARAM, lparam: LP
                             .all(Key::is_pressed);
 
                         if call {
-                            ignore_next_hook |= (handler)(&keys);
+                            ignore_next_hook |= (handler)(keys);
                             was_hook_called = true;
                         }
                     }
@@ -126,7 +126,7 @@ impl KeypressHandler {
     }
 
     pub fn add_hotkey<F: FnMut(&[Key]) -> bool + Send + 'static>(hotkey: &[Key], callback: F) {
-        if hotkey.len() > 0 {
+        if !hotkey.is_empty() {
             HANDLER_CTX.lock()
                 .handlers
                 .push((hotkey.to_vec(), Box::new(callback)))
