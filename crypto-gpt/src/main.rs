@@ -398,7 +398,7 @@ impl fmt::Display for GptModel {
         let s = match self {
             Self::Gpt35Turbo => "gpt-3.5-turbo-0125",
             Self::Gpt4O => "gpt-4o",
-            Self::GptO1 => "o1",
+            Self::GptO1 => "o1-preview",
         };
 
         f.write_str(s)
