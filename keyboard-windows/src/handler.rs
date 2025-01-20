@@ -108,7 +108,7 @@ fn worker() {
                 },
                 BOOL(_) => {
                     // real event
-                    TranslateMessage(&msg);
+                    let _ = TranslateMessage(&msg);
                     DispatchMessageW(&msg);
                 }
             }
