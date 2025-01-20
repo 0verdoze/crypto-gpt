@@ -379,10 +379,10 @@ fn get_clipboard_image() -> Option<String> {
 }
 
 fn get_clipboard_text() -> Option<String> {
-    let mut str = String::new();
+    let mut s = String::new();
 
-    clipboard_win::formats::Unicode.read_clipboard(&mut str).ok()?;
-    (!str.is_empty()).then_some(str)
+    clipboard_win::formats::Unicode.read_clipboard(&mut s).ok()?;
+    (!s.is_empty()).then_some(s)
 }
 
 fn get_client() -> Client<OpenAIConfig> {
