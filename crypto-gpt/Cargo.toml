@@ -6,18 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.79"
-async-openai = { version = "0.18.3", default-features = false, features = ["native-tls"] }
-base64 = "0.21.7"
-clipboard-win = { version = "5.1.0", features = ["std"] }
-env_logger = "0.11.1"
-image = { version = "0.24.8", default-features = false, features = ["bmp", "png", "jpeg"] }
+anyhow = "1.0.95"
+async-openai = { version = "0.27.2", default-features = false, features = ["native-tls"] }
+base64 = "0.22.1"
+clipboard-win = { version = "5.4.0", features = ["std"] }
+env_logger = "0.11.6"
+image = { version = "0.25.5", default-features = false, features = ["bmp", "png", "jpeg"] }
 keyboard-windows = { version = "0.1.0", path = "../keyboard-windows" }
-log = "0.4.20"
+log = "0.4.25"
 spin = "0.9.8"
-tokio = { version = "1.36.0", features = ["full"] }
-tray-icon = "0.11.2"
-windows = { version = "0.52.0", features = ["Win32_Foundation", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Controls"] }
+tokio = { version = "1.43.0", features = ["full"] }
+tray-icon = "0.19.2"
+windows = { version = "0.59.0", features = ["Win32_Foundation", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Controls"] }
 
 [features]
 default = ["toggle_summary"]

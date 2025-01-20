@@ -1,6 +1,6 @@
-use std::{io::Cursor, sync::LazyLock, thread, time::Duration};
+use std::{fmt, io::Cursor, sync::LazyLock, thread, time::Duration};
 
-use async_openai::{config::OpenAIConfig, types::{ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPart, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, CreateChatCompletionRequest, ImageUrlArgs, ImageUrlDetail}, Client};
+use async_openai::{config::OpenAIConfig, types::{ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, ChatCompletionRequestUserMessageContentPart, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs}, Client};
 use base64::Engine;
 use clipboard_win::{set_clipboard, Getter};
 use image::ImageFormat;
@@ -44,7 +44,7 @@ struct TyperContext {
     head: usize,
 }
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 enum GptModel {
     Gpt35Turbo,
     #[default]
@@ -128,8 +128,10 @@ fn main() {
     let runtime_handle = runtime.handle().clone();
     KeypressHandler::add_hotkey(&[Key::LControlKey, Key::PeriodKey], move |_| {
         let mut ctx = CONTEXT.lock();
-        ctx.job.as_mut().map(|handle| handle.abort());
-        
+        if let Some(handle) = ctx.job.as_ref() {
+            handle.abort();
+        }
+
         ctx.job = None;
         ctx.output_prompt = None;
 
@@ -191,8 +193,7 @@ fn main() {
         };
         ctx.model = new_model;
 
-        log::info!("model changed to {}", new_model.to_string());
-
+        log::info!("model changed to {}", new_model);
         true
     });
 
@@ -282,35 +283,34 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
 
     let mut user_prompt = ChatCompletionRequestUserMessage::default();
     let mut user_content_parts = vec![
-        ChatCompletionRequestMessageContentPart::Text(
+        ChatCompletionRequestUserMessageContentPart::Text(
             ChatCompletionRequestMessageContentPartTextArgs::default()
                 .text(&ctx.prompt)
                 .build()?
         ),
     ];
 
-    let contains_image;
-    if ctx.image.len() > 0 {
-        user_content_parts.push(ChatCompletionRequestMessageContentPart::Image(
+    let contains_image = if !ctx.image.is_empty() {
+        user_content_parts.push(ChatCompletionRequestUserMessageContentPart::ImageUrl(
             ChatCompletionRequestMessageContentPartImageArgs::default()
                 .image_url(
                     ImageUrlArgs::default()
                         .url(&ctx.image)
-                        .detail(ImageUrlDetail::High)
+                        .detail(ImageDetail::High)
                         .build()?
                 ).build()?
         ));
 
-        contains_image = true;
+        true
     } else {
-        contains_image = false;
-    }
+        false
+    };
 
     user_prompt.content = ChatCompletionRequestUserMessageContent::Array(user_content_parts);
 
     let mut request = CreateChatCompletionRequest::default();
 
-    if contains_image && request.model == GptModel::Gpt35Turbo {
+    if contains_image && ctx.model == GptModel::Gpt35Turbo {
         request.model = GptModel::Gpt4O.to_string();
     } else {
         request.model = ctx.model.to_string();
@@ -326,7 +326,7 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
 
     request.messages.push(ChatCompletionRequestMessage::User(user_prompt));
 
-    request.max_tokens = Some(2048);
+    request.max_completion_tokens = Some(2048);
     request.temperature = Some(1.3);
 
     drop(ctx);
@@ -371,8 +371,7 @@ fn get_clipboard_image() -> Option<String> {
         let mut jpeg = Cursor::new(Vec::new());
         img.write_to(&mut jpeg, ImageFormat::Jpeg).unwrap();
 
-        let encoded = encoder.encode(&jpeg.into_inner());
-        
+        let encoded = encoder.encode(jpeg.into_inner());
         Some(format!("data:image/jpeg;base64,{}", encoded))
     } else {
         None
@@ -383,7 +382,7 @@ fn get_clipboard_text() -> Option<String> {
     let mut str = String::new();
 
     clipboard_win::formats::Unicode.read_clipboard(&mut str).ok()?;
-    (str.len() > 0).then_some(str)
+    (!str.is_empty()).then_some(str)
 }
 
 fn get_client() -> Client<OpenAIConfig> {
@@ -394,13 +393,15 @@ fn get_client() -> Client<OpenAIConfig> {
     Client::with_config(config)
 }
 
-impl ToString for GptModel {
-    fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for GptModel {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
             Self::Gpt35Turbo => "gpt-3.5-turbo-0125",
             Self::Gpt4O => "gpt-4o",
             Self::GptO1 => "o1",
-        }.to_string()
+        };
+
+        f.write_str(s)
     }
 }
 
