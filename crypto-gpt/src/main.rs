@@ -310,7 +310,7 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
 
     let mut request = CreateChatCompletionRequest::default();
 
-    if contains_image {
+    if contains_image && request.model == GptModel::Gpt35Turbo {
         request.model = GptModel::Gpt4O.to_string();
     } else {
         request.model = ctx.model.to_string();
