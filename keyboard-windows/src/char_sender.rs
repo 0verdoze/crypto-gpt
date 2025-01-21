@@ -1,6 +1,6 @@
 use std::{mem, sync::mpsc::{self, sync_channel}, thread, time::Duration};
 
-use windows::Win32::UI::Input::KeyboardAndMouse::{SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP};
+use windows::Win32::UI::Input::{self, KeyboardAndMouse::{SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP}};
 
 use crate::{Key, Lazy, MAGIC_CONST};
 
@@ -19,7 +19,7 @@ struct InputRequest {
     extra: usize,
 }
 
-const KEY_MAP: &'static [(char, &'static [Key])] = &[
+const KEY_MAP: &[(char, &[Key])] = &[
     // English letters
     ('a', &[Key::AKey]),
     ('b', &[Key::BKey]),
@@ -169,9 +169,12 @@ fn input_sender(rx: mpsc::Receiver<InputRequest>) {
             dwExtraInfo: input_request.extra,
         };
 
-        let mut input = INPUT::default();
-        input.r#type = INPUT_KEYBOARD;
-        input.Anonymous.ki = keybd;
+        let input = INPUT {
+            r#type: INPUT_KEYBOARD,
+            Anonymous: Input::KeyboardAndMouse::INPUT_0 {
+                ki: keybd,
+            },
+        };
 
         unsafe {
             SendInput(&[input], mem::size_of::<INPUT>() as _);
