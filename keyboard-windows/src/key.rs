@@ -393,7 +393,8 @@ impl Key {
             Key::Numpad7Key,
             Key::Numpad8Key,
             Key::Numpad9Key,
-        ].contains(self)
+        ]
+        .contains(self)
     }
 
     pub fn is_alphabetic(&self) -> bool {
@@ -424,13 +425,13 @@ impl Key {
             Key::XKey,
             Key::YKey,
             Key::ZKey,
-        ].contains(self)
+        ]
+        .contains(self)
     }
 
     pub fn is_symbol(&self) -> bool {
         [
             Key::SpaceKey,
-
             Key::BackquoteKey,
             Key::SlashKey,
             Key::BackslashKey,
@@ -442,7 +443,8 @@ impl Key {
             Key::LBracketKey,
             Key::RBracketKey,
             Key::EqualKey,
-        ].contains(self)
+        ]
+        .contains(self)
     }
 
     pub fn is_alphanumeric(&self) -> bool {

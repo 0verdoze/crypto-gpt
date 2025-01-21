@@ -1,11 +1,10 @@
-
-mod key;
-mod handler;
 mod char_sender;
+mod handler;
+mod key;
 
-pub use key::Key;
-pub use handler::KeypressHandler;
 pub use char_sender::CharSender;
+pub use handler::KeypressHandler;
+pub use key::Key;
 
 pub(crate) use handler::MAGIC_CONST;
 

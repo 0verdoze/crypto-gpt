@@ -1,6 +1,16 @@
 use std::{fmt, io::Cursor, sync::LazyLock, thread, time::Duration};
 
-use async_openai::{config::OpenAIConfig, types::{ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPartImageArgs, ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs, ChatCompletionRequestUserMessageContent, ChatCompletionRequestUserMessageContentPart, CreateChatCompletionRequest, ImageDetail, ImageUrlArgs}, Client};
+use async_openai::{
+    config::OpenAIConfig,
+    types::{
+        ChatCompletionRequestMessage, ChatCompletionRequestMessageContentPartImageArgs,
+        ChatCompletionRequestMessageContentPartTextArgs, ChatCompletionRequestSystemMessageArgs,
+        ChatCompletionRequestUserMessage, ChatCompletionRequestUserMessageArgs,
+        ChatCompletionRequestUserMessageContent, ChatCompletionRequestUserMessageContentPart,
+        CreateChatCompletionRequest, ImageDetail, ImageUrlArgs,
+    },
+    Client,
+};
 use base64::Engine;
 use clipboard_win::{set_clipboard, Getter};
 use image::ImageFormat;
@@ -15,7 +25,7 @@ mod tray_logger;
 // ctrl + ; -> clear image from prompt (not cleared automatically)
 // ctrl + ' -> change model for text prompt
 // ctrl + [ -> change if model should get a summary
-// ctrl + , -> save clipboard content (image/text) 
+// ctrl + , -> save clipboard content (image/text)
 // ctrl + . -> run prompt
 // ctrl + / -> paste latest output
 
@@ -23,7 +33,9 @@ static CONTEXT: LazyLock<Mutex<Context>> = LazyLock::new(Default::default);
 static TYPER_CONTEXT: LazyLock<Mutex<TyperContext>> = LazyLock::new(Default::default);
 
 pub static LOGGER: LazyLock<TrayLogger> = LazyLock::new(|| {
-    TrayLogger::new(env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).build())
+    TrayLogger::new(
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).build(),
+    )
 });
 
 #[derive(Debug)]
@@ -33,7 +45,7 @@ struct Context {
 
     model: GptModel,
     summary_prompt: bool,
-    
+
     job: Option<JoinHandle<()>>,
     output_prompt: Option<String>,
 }
@@ -111,11 +123,11 @@ fn main() {
             ClipboardData::Image(img) => {
                 log::info!("image captured");
                 ctx.image = img
-            },
+            }
             ClipboardData::Text(s) => {
                 log::info!("text captured (`{s}`)");
                 ctx.prompt = s
-            },
+            }
             ClipboardData::NoData => {
                 log::warn!("no data captured");
             }
@@ -150,7 +162,7 @@ fn main() {
 
                     let input_len = ctx.prompt.len();
                     let image = !ctx.image.is_empty();
-                    
+
                     log::info!("output: {}", ctx.output_prompt.as_deref().unwrap_or_default());
                     log::info!("generation done, input len: {input_len}, image: {image}, output len: {output_len}");
                     LOGGER.set_icon([0, 127, 0, 255]);
@@ -243,17 +255,30 @@ fn main() {
         let control_id = GetFocus();
         let mut buf = [0; 128];
 
-        SendMessageW(control_id, WM_GETTEXT, WPARAM(buf.len()), LPARAM(buf.as_mut_ptr() as isize));
+        SendMessageW(
+            control_id,
+            WM_GETTEXT,
+            WPARAM(buf.len()),
+            LPARAM(buf.as_mut_ptr() as isize),
+        );
         // for testing
         println!("{}", String::from_utf16_lossy(&buf));
 
         let mut start = 0u32;
         let mut end = 0u32;
-        SendMessageW(control_id, EM_GETSEL, WPARAM(mem::transmute(&mut start)), LPARAM(mem::transmute(&mut end)));
+        SendMessageW(
+            control_id,
+            EM_GETSEL,
+            WPARAM(mem::transmute(&mut start)),
+            LPARAM(mem::transmute(&mut end)),
+        );
 
         if (start as usize) < buf.len() && (end as usize) < buf.len() && start <= end {
             // for testing
-            println!("{}", String::from_utf16_lossy(&buf[start as usize..end as usize]));
+            println!(
+                "{}",
+                String::from_utf16_lossy(&buf[start as usize..end as usize])
+            );
         }
 
         AttachThreadInput(active_window_thread, current_thread, false);
@@ -278,13 +303,11 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
         .build()?;
 
     let mut user_prompt = ChatCompletionRequestUserMessage::default();
-    let mut user_content_parts = vec![
-        ChatCompletionRequestUserMessageContentPart::Text(
-            ChatCompletionRequestMessageContentPartTextArgs::default()
-                .text(&ctx.prompt)
-                .build()?
-        ),
-    ];
+    let mut user_content_parts = vec![ChatCompletionRequestUserMessageContentPart::Text(
+        ChatCompletionRequestMessageContentPartTextArgs::default()
+            .text(&ctx.prompt)
+            .build()?,
+    )];
 
     let contains_image = if !ctx.image.is_empty() {
         user_content_parts.push(ChatCompletionRequestUserMessageContentPart::ImageUrl(
@@ -293,8 +316,9 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
                     ImageUrlArgs::default()
                         .url(&ctx.image)
                         .detail(ImageDetail::High)
-                        .build()?
-                ).build()?
+                        .build()?,
+                )
+                .build()?,
         ));
 
         true
@@ -318,20 +342,28 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
             .content(prompts::MACHINE_LEARNING_EXPERT)
             .build()?;
 
-        request.messages.push(ChatCompletionRequestMessage::User(main_prompt));
+        request
+            .messages
+            .push(ChatCompletionRequestMessage::User(main_prompt));
     } else {
         let main_prompt = ChatCompletionRequestSystemMessageArgs::default()
             .content(prompts::MACHINE_LEARNING_EXPERT)
             .build()?;
-    
-        request.messages.push(ChatCompletionRequestMessage::System(main_prompt));
+
+        request
+            .messages
+            .push(ChatCompletionRequestMessage::System(main_prompt));
     }
 
     if ctx.summary_prompt {
-        request.messages.push(ChatCompletionRequestMessage::User(summary_prompt));
+        request
+            .messages
+            .push(ChatCompletionRequestMessage::User(summary_prompt));
     }
 
-    request.messages.push(ChatCompletionRequestMessage::User(user_prompt));
+    request
+        .messages
+        .push(ChatCompletionRequestMessage::User(user_prompt));
 
     request.max_completion_tokens = Some(2048);
 
@@ -345,11 +377,7 @@ async fn worker(client: Client<OpenAIConfig>) -> anyhow::Result<Option<String>> 
     let resp = client.chat().create(request).await?;
 
     Ok((|| -> Option<String> {
-        resp.choices
-            .first()?
-            .message
-            .content
-            .clone()
+        resp.choices.first()?.message.content.clone()
     })())
 }
 
@@ -365,20 +393,24 @@ fn get_clipboard() -> ClipboardData {
         return ClipboardData::NoData;
     }
 
-    get_clipboard_image().map(ClipboardData::Image)
+    get_clipboard_image()
+        .map(ClipboardData::Image)
         .or_else(|| get_clipboard_text().map(ClipboardData::Text))
         .unwrap_or(ClipboardData::NoData)
 }
 
 fn get_clipboard_image() -> Option<String> {
     let mut bytes: Vec<u8> = Vec::new();
-    
-    clipboard_win::formats::Bitmap.read_clipboard(&mut bytes).ok()?;
+
+    clipboard_win::formats::Bitmap
+        .read_clipboard(&mut bytes)
+        .ok()?;
     if !bytes.is_empty() {
-        let encoder = base64::engine::GeneralPurpose::new(&base64::alphabet::STANDARD, Default::default());
-        
+        let encoder =
+            base64::engine::GeneralPurpose::new(&base64::alphabet::STANDARD, Default::default());
+
         let img = image::load_from_memory_with_format(&bytes, ImageFormat::Bmp).unwrap();
-        
+
         let mut jpeg = Cursor::new(Vec::new());
         img.write_to(&mut jpeg, ImageFormat::Jpeg).unwrap();
 
@@ -392,7 +424,9 @@ fn get_clipboard_image() -> Option<String> {
 fn get_clipboard_text() -> Option<String> {
     let mut s = String::new();
 
-    clipboard_win::formats::Unicode.read_clipboard(&mut s).ok()?;
+    clipboard_win::formats::Unicode
+        .read_clipboard(&mut s)
+        .ok()?;
     (!s.is_empty()).then_some(s)
 }
 

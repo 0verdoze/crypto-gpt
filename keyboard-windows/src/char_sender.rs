@@ -1,6 +1,16 @@
-use std::{mem, sync::mpsc::{self, sync_channel}, thread, time::Duration};
+use std::{
+    mem,
+    sync::mpsc::{self, sync_channel},
+    thread,
+    time::Duration,
+};
 
-use windows::Win32::UI::Input::{self, KeyboardAndMouse::{SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP}};
+use windows::Win32::UI::Input::{
+    self,
+    KeyboardAndMouse::{
+        SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP,
+    },
+};
 
 use crate::{Key, Lazy, MAGIC_CONST};
 
@@ -47,7 +57,6 @@ const KEY_MAP: &[(char, &[Key])] = &[
     ('x', &[Key::XKey]),
     ('y', &[Key::YKey]),
     ('z', &[Key::ZKey]),
-
     // Numbers
     ('0', &[Key::Numrow0Key]),
     ('1', &[Key::Numrow1Key]),
@@ -59,7 +68,6 @@ const KEY_MAP: &[(char, &[Key])] = &[
     ('7', &[Key::Numrow7Key]),
     ('8', &[Key::Numrow8Key]),
     ('9', &[Key::Numrow9Key]),
-    
     // Polish letters
     ('ą', &[Key::RAltKey, Key::AKey]),
     ('ć', &[Key::RAltKey, Key::CKey]),
@@ -70,7 +78,6 @@ const KEY_MAP: &[(char, &[Key])] = &[
     ('ś', &[Key::RAltKey, Key::SKey]),
     ('ż', &[Key::RAltKey, Key::ZKey]),
     ('ź', &[Key::RAltKey, Key::XKey]),
-
     // Symbols
     ('-', &[Key::MinusKey]),
     ('=', &[Key::EqualKey]),
@@ -83,7 +90,6 @@ const KEY_MAP: &[(char, &[Key])] = &[
     ('/', &[Key::SlashKey]),
     ('\\', &[Key::BackslashKey]),
     ('`', &[Key::BackquoteKey]),
-
     ('!', &[Key::LShiftKey, Key::Numrow1Key]),
     ('@', &[Key::LShiftKey, Key::Numrow2Key]),
     ('#', &[Key::LShiftKey, Key::Numrow3Key]),
@@ -104,12 +110,10 @@ const KEY_MAP: &[(char, &[Key])] = &[
     ('>', &[Key::LShiftKey, Key::PeriodKey]),
     ('?', &[Key::LShiftKey, Key::SlashKey]),
     ('|', &[Key::LShiftKey, Key::BackslashKey]),
-
     // white spaces
     (' ', &[Key::SpaceKey]),
     ('\n', &[Key::EnterKey]),
     ('\t', &[Key::TabKey]),
-    
     // ignored due to need to follow with another key when keyboard is set to "Polish (programmer)"
     // ('~', &[Key::LShiftKey, Key::BackquoteKey]),
     ('~', &[]),
@@ -126,30 +130,41 @@ impl CharSender {
             keystrokes.push(Key::LShiftKey);
         }
 
-        let option = KEY_MAP.iter()
-            .find(|(c,_)| c == &lower_case);
+        let option = KEY_MAP.iter().find(|(c, _)| c == &lower_case);
 
         if let Some((_, mapping)) = option {
             keystrokes.extend_from_slice(mapping);
 
-            keystrokes.iter().for_each(|key| Self::press_key(*key, ignore_handler));
+            keystrokes
+                .iter()
+                .for_each(|key| Self::press_key(*key, ignore_handler));
 
             thread::sleep(DELAY);
 
-            keystrokes.iter().for_each(|key| Self::release_key(*key, ignore_handler));
+            keystrokes
+                .iter()
+                .for_each(|key| Self::release_key(*key, ignore_handler));
         }
     }
 
     pub fn press_key(key: Key, ignore_handler: bool) {
         let extra = if ignore_handler { MAGIC_CONST } else { 0 };
 
-        let _ = INPUT_TX.send(InputRequest { key, release: false, extra });
+        let _ = INPUT_TX.send(InputRequest {
+            key,
+            release: false,
+            extra,
+        });
     }
 
     pub fn release_key(key: Key, ignore_handler: bool) {
         let extra = if ignore_handler { MAGIC_CONST } else { 0 };
 
-        let _ = INPUT_TX.send(InputRequest { key, release: true, extra });
+        let _ = INPUT_TX.send(InputRequest {
+            key,
+            release: true,
+            extra,
+        });
     }
 }
 
@@ -171,9 +186,7 @@ fn input_sender(rx: mpsc::Receiver<InputRequest>) {
 
         let input = INPUT {
             r#type: INPUT_KEYBOARD,
-            Anonymous: Input::KeyboardAndMouse::INPUT_0 {
-                ki: keybd,
-            },
+            Anonymous: Input::KeyboardAndMouse::INPUT_0 { ki: keybd },
         };
 
         unsafe {

@@ -3,11 +3,10 @@ use std::{mem, slice, sync::mpsc, thread};
 use log::Level;
 use tray_icon::Icon;
 
-
 /// wrapper aroung env_logger
-/// 
+///
 /// all calls are redirected as is to env_logger
-/// 
+///
 /// in addition to that a copy of log message is available on tray
 /// icon color indicating message type
 pub struct TrayLogger {
@@ -21,10 +20,7 @@ impl TrayLogger {
         let (tx, rx) = mpsc::sync_channel(8);
         thread::spawn(move || Self::worker(rx));
 
-        Self {
-            env_log,
-            tray: tx,
-        }
+        Self { env_log, tray: tx }
     }
 
     fn level_to_rgba(level: Level) -> [u8; 4] {
@@ -62,7 +58,7 @@ impl TrayLogger {
 
             if let Some(icon) = icon {
                 let _result = tray.set_icon(Some(icon));
-            } 
+            }
         }
     }
 
@@ -81,7 +77,7 @@ impl TrayLogger {
                 let dx = x as i32 - center_x;
                 let dy = y as i32 - center_y;
                 let distance_squared = dx * dx + dy * dy;
-        
+
                 if distance_squared <= radius * radius {
                     *Self::as_bytes_u32_mut(&mut img[y * Y_DIMMENSION + x]) = color;
                 }
@@ -93,15 +89,11 @@ impl TrayLogger {
     }
 
     fn as_bytes_u32_mut<'a>(n: &'a mut u32) -> &'a mut [u8; 4] {
-        unsafe {
-            mem::transmute::<&'a mut u32, &'a mut [u8; 4]>(n)
-        }
+        unsafe { mem::transmute::<&'a mut u32, &'a mut [u8; 4]>(n) }
     }
 
     fn as_bytes_u32_slice(b: &[u32]) -> &[u8] {
-        unsafe {
-            slice::from_raw_parts(b.as_ptr() as *const u8, b.len() * 4)
-        }
+        unsafe { slice::from_raw_parts(b.as_ptr() as *const u8, b.len() * 4) }
     }
 }
 
