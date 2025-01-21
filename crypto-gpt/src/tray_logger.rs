@@ -98,7 +98,7 @@ impl TrayLogger {
         }
     }
 
-    fn as_bytes_u32_slice<'a>(b: &'a [u32]) -> &'a [u8] {
+    fn as_bytes_u32_slice(b: &[u32]) -> &[u8] {
         unsafe {
             slice::from_raw_parts(b.as_ptr() as *const u8, b.len() * 4)
         }
